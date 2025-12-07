@@ -12,9 +12,7 @@ load_dotenv()  # reads variables from a .env file and sets them in os.environ
 openAI_endpoint=os.getenv("OPENAI_URL")
 openAI_apikey=os.getenv("OPENAI_APIKEY")
 
-default_modelid="meta-llama/llama-3.2-3b-instruct:free"
-# default_modelid="openai/gpt-4o"
-# model_2_id="deepseek-r1:8b"
+default_modelid="google/gemma-3-27b-it:free"
 
 client = instructor.from_openai( 
     OpenAI(
@@ -45,11 +43,12 @@ def call(system_prompt: str, message: str, response_type:BaseModel =StringRespon
               "content": message,
           },)
 
+    # Gemma-3 don't support system role so we are sending system prompt as part of user messages
     result_obj = client.chat.completions.create (
       model=model,
       response_model=response_type,
       messages=[
-          {"role": "system", "content": system_prompt},
+          {"role": "user", "content": system_prompt},
       ]+history,
       temperature = params.temperature,
       max_tokens = params.max_tokens,
