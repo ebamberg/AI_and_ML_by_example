@@ -7,6 +7,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import IsolationForest
 from sklearn.metrics import classification_report
 
+from llm import call
+
 
 def load_dataset() -> pd.DataFrame:
     # Load the dataset from a CSV file
@@ -75,6 +77,22 @@ def test_isolation_forest_model(model: IsolationForest, X_test: pd.DataFrame, y_
     print (y_pred)
     print (classification_report(y_test, y_pred, target_names=['Normal', 'Anomaly']))
 
+def explain_anomaly_with_llm(transaction_details: dict) -> str:
+    """
+    Use LLM to explain why a transaction is considered an anomaly.
+    """
+
+    system_prompt = "You are a financial fraud detection expert."
+    message = f"""
+        Please score in a range from 1 to 5, where 1 is normal and 5 is an anomaly, if the following transaction might be considered an anomaly and explain the reason for that consideration.
+
+        TRANSACTION: 
+        {transaction_details}
+    """
+    
+    response = call(system_prompt, message)
+    return response.response_text
+
 if __name__=='__main__':
     print ("Transactions")
     data = load_dataset()
@@ -102,7 +120,7 @@ if __name__=='__main__':
     prediction=model.predict(input)
     print (prediction)  # -1 for anomaly, 1 for normal
 
-
+    print(explain_anomaly_with_llm(input.to_dict(orient='records')[0]))
     
 
 
